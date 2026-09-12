@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
 Write-Host "============================================================"
-Write-Host "  Voice AI Assistant Lite v1.03"
+Write-Host "  Lingyin Lite v1.0.0"
 Write-Host "============================================================"
 Write-Host ""
 

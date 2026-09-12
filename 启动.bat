@@ -1,9 +1,9 @@
 @echo off
 cd /d "%~dp0"
-title Voice AI Assistant Lite v1.03
+title Lingyin Lite v1.0.0
 
 echo ============================================================
-echo   Voice AI Assistant Lite v1.03
+echo   Lingyin Lite v1.0.0
 echo ============================================================
 echo.
 

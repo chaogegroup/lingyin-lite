@@ -1,8 +1,8 @@
-# Release v1.0.0
+# Lingyin Lite v1.0.0
 
 ## What
 
-A hackable realtime voice AI engine: WebRTC → VAD → STT → LLM → TTS, with true barge-in.
+灵音（Local Live）开源精简版 — a hackable realtime voice AI engine: WebRTC → VAD → STT → LLM → TTS, with true barge-in.
 
 ## Highlights
 

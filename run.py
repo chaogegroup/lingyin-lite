@@ -434,7 +434,7 @@ def main():
 
     print(c("=" * 60, "cyan"))
     print(c("  实时语音 AI 助手 - 一键启动", "bold"))
-    print(c("  Voice AI Assistant Lite v1.03", "cyan"))
+    print(c("  Lingyin Lite v1.0.0", "cyan"))
     print(c("=" * 60, "cyan"))
 
     if not check_python_version():

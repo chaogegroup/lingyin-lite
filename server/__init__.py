@@ -1,1 +1,1 @@
-"""Voice AI Assistant Lite - Server Package."""
+"""Lingyin Lite - realtime voice AI engine (server package)."""

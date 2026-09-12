@@ -219,7 +219,7 @@ def decode_mp3_to_pcm16(mp3_data: bytes, sample_rate: int = 24000) -> bytes:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化，关闭时清理。"""
-    logger.info("Starting Voice AI Assistant Lite...")
+    logger.info("Starting Lingyin Lite...")
     app.state.webrtc_manager = WebRTCManager(create_pipeline)
     yield
     logger.info("Shutting down...")
@@ -227,8 +227,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Voice AI Assistant Lite",
-    description="实时语音 AI 助手精简版 —— 从 Local Live 项目提取的核心语音链路",
+    title="Lingyin Lite",
+    description="灵音开源精简版 —— 实时语音 AI 对话引擎（WebRTC / VAD / STT / LLM / TTS）",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -247,7 +247,7 @@ async def index():
 @app.get("/health")
 async def health():
     """健康检查。"""
-    return {"status": "ok", "service": "voice-ai-assistant-lite"}
+    return {"status": "ok", "service": "lingyin-lite"}
 
 
 @app.get("/config")

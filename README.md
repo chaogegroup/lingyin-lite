@@ -1,8 +1,8 @@
-# Voice AI Assistant Lite
+# Lingyin Lite
 
 > **实时语音 AI 助手核心引擎 —— 能听、能想、能说、能被打断。**
 >
-> A minimal, hackable realtime voice AI engine: WebRTC audio in → VAD → STT → LLM → TTS → audio out, with true barge-in interruption.
+> 灵音（Local Live）开源精简版 · A minimal, hackable realtime voice AI engine: WebRTC → VAD → STT → LLM → TTS, with true barge-in.
 
 ---
 
@@ -57,8 +57,8 @@ chmod +x start.sh
 
 ```bash
 # 1. 克隆
-git clone https://github.com/chaogegroup/voice-ai-assistant-lite.git
-cd voice-ai-assistant-lite
+git clone https://github.com/chaogegroup/lingyin-lite.git
+cd lingyin-lite
 
 # 2. 依赖（Python 3.10+）
 python -m venv venv
@@ -117,7 +117,7 @@ tts:
 ## 项目结构
 
 ```
-voice-ai-assistant-lite/
+lingyin-lite/
 ├── README.md
 ├── LICENSE
 ├── requirements.txt
