@@ -1,0 +1,32 @@
+# Real configuration & secrets (never commit)
+config.yaml
+.env
+.env.*
+
+# Runtime artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+logs/
+*.log
+.hf_cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local models / caches
+models/
+*.bin
+*.onnx
+*.pt
+*.pth
+*.safetensors
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

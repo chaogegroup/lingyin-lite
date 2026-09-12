@@ -1,0 +1,24 @@
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# WebRTC
+aiortc>=1.9.0
+av>=11.0.0
+
+# Config
+PyYAML>=6.0
+
+# HTTP client (LLM/STT/TTS)
+aiohttp>=3.9.0
+
+# Audio / VAD
+numpy>=1.24.0
+torch>=2.0.0
+silero-vad>=5.1.0
+
+# Local / free TTS (Edge)
+edge-tts>=6.1.0
+
+# Local STT (Faster Whisper)
+faster-whisper>=1.0.0

@@ -1,0 +1,97 @@
+# ============================================================
+# 实时语音 AI 助手精简版 - 配置文件
+# ============================================================
+# 复制此文件为 config.yaml，然后填入你的 API Key。
+# 所有 API Key 只保存在本地，不会上传到任何服务器。
+# ============================================================
+
+# 服务配置
+host: "0.0.0.0"
+port: 8000
+
+# 语言设置
+language: "zh"
+sample_rate: 16000
+
+# 系统提示词（AI 助手的人格设定）
+system_prompt: |
+  你是一个友好、简洁的语音助手。
+  回答要口语化、简短，适合语音播报。
+  不要使用 markdown 格式，不要输出代码块。
+  如果用户问复杂问题，先给出简短回答，再询问是否需要详细解释。
+
+# 对话历史
+max_history: 10
+
+# 打断设置：用户说话时是否打断当前回复
+interrupt_on_speech: true
+
+# ============================================================
+# STT（语音转文字）配置
+# ============================================================
+# provider 可选: "openai" | "faster-whisper"
+stt:
+  provider: "openai"
+
+  # OpenAI 兼容 STT（推荐，速度快）
+  api_key: "你的-OPENAI-API-KEY"
+  base_url: "https://api.openai.com/v1"
+  model: "whisper-1"
+  language: "zh"
+
+  # faster-whisper 本地 STT（完全离线，需要 GPU）
+  # provider: "faster-whisper"
+  # model_size: "base"       # tiny/base/small/medium/large-v3
+  # device: "auto"           # auto/cpu/cuda
+  # compute_type: "int8"     # int8/float16/float32
+
+# ============================================================
+# LLM（大语言模型）配置
+# ============================================================
+# provider 可选: "openai" | "ollama"
+llm:
+  provider: "openai"
+
+  # OpenAI 兼容 LLM（支持 DeepSeek、SiliconFlow、OpenRouter 等）
+  api_key: "你的-OPENAI-API-KEY"
+  base_url: "https://api.openai.com/v1"
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 1024
+
+  # DeepSeek 示例：
+  # base_url: "https://api.deepseek.com/v1"
+  # model: "deepseek-chat"
+
+  # SiliconFlow 示例：
+  # base_url: "https://api.siliconflow.cn/v1"
+  # model: "Qwen/Qwen2.5-7B-Instruct"
+
+  # Ollama 本地模型（完全离线）
+  # provider: "ollama"
+  # base_url: "http://localhost:11434"
+  # model: "qwen2.5:7b"
+
+# ============================================================
+# TTS（文字转语音）配置
+# ============================================================
+# provider 可选: "edge-tts" | "openai"
+tts:
+  provider: "edge-tts"
+
+  # Edge TTS（推荐，免费、音质好、无需 API Key）
+  voice: "zh-CN-XiaoxiaoNeural"  # 晓晓（女声，自然）
+  # 其他中文声音：
+  # zh-CN-YunxiNeural    云希（男声，沉稳）
+  # zh-CN-YunjianNeural  云健（男声，磁性）
+  # zh-CN-XiaoyiNeural   晓伊（女声，活泼）
+  rate: "+0%"
+  volume: "+0%"
+  sample_rate: 24000
+
+  # OpenAI 兼容 TTS
+  # provider: "openai"
+  # api_key: "你的-OPENAI-API-KEY"
+  # base_url: "https://api.openai.com/v1"
+  # model: "tts-1"
+  # voice: "alloy"  # alloy/echo/fable/onyx/nova/shimmer

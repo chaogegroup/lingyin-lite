@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时语音 AI 助手</title>
+    <style>
+        :root {
+            --bg0: #0b1020;
+            --bg1: #121a33;
+            --card: rgba(255,255,255,0.045);
+            --line: rgba(255,255,255,0.09);
+            --text: #e8eefc;
+            --muted: #8b98b0;
+            --cyan: #3de0ff;
+            --violet: #8b5cff;
+            --green: #3dffb0;
+            --amber: #ffc14d;
+            --danger: #ff6b7a;
+            --user-bubble: rgba(61,224,255,0.14);
+            --ai-bubble: rgba(139,92,255,0.14);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(1200px 600px at 20% -10%, rgba(61,224,255,0.12), transparent 55%),
+                radial-gradient(900px 500px at 90% 10%, rgba(139,92,255,0.14), transparent 50%),
+                linear-gradient(160deg, var(--bg0), var(--bg1) 55%, #0a0f1c);
+            color: var(--text);
+            min-height: 100%;
+        }
+        .app {
+            max-width: 860px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding: 20px 16px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            background: linear-gradient(90deg, var(--cyan), var(--violet));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand p {
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .stage {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px 16px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .orb-wrap {
+            width: 148px;
+            height: 148px;
+            position: relative;
+        }
+        #orbCanvas {
+            width: 148px;
+            height: 148px;
+            display: block;
+            border-radius: 50%;
+        }
+        .status-pill {
+            min-height: 28px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+        }
+        .status-pill.listening { color: var(--cyan); border-color: rgba(61,224,255,0.35); }
+        .status-pill.thinking { color: var(--violet); border-color: rgba(139,92,255,0.4); }
+        .status-pill.speaking { color: var(--green); border-color: rgba(61,255,176,0.35); }
+        .status-pill.interrupted { color: var(--amber); border-color: rgba(255,193,77,0.4); }
+
+        .chat {
+            flex: 1;
+            min-height: 280px;
+            max-height: min(52vh, 520px);
+            overflow-y: auto;
+            background: rgba(0,0,0,0.18);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 14px 12px 18px;
+            scroll-behavior: smooth;
+        }
+        .chat-empty {
+            height: 100%;
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+            padding: 24px;
+            line-height: 1.7;
+        }
+        .msg {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+            animation: fadeIn 0.18s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: none; }
+        }
+        .msg .meta {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 4px;
+            padding: 0 4px;
+        }
+        .msg .bubble {
+            max-width: min(92%, 640px);
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.65;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid transparent;
+        }
+        .msg.user { align-items: flex-end; }
+        .msg.user .bubble {
+            background: var(--user-bubble);
+            border-color: rgba(61,224,255,0.22);
+            border-bottom-right-radius: 6px;
+        }
+        .msg.assistant { align-items: flex-start; }
+        .msg.assistant .bubble {
+            background: var(--ai-bubble);
+            border-color: rgba(139,92,255,0.22);
+            border-bottom-left-radius: 6px;
+        }
+        .msg.system { align-items: center; }
+        .msg.system .bubble {
+            background: rgba(255,255,255,0.04);
+            color: var(--muted);
+            font-size: 12px;
+            border-color: var(--line);
+        }
+        .msg.streaming .bubble::after {
+            content: "▍";
+            margin-left: 2px;
+            color: var(--cyan);
+            animation: blink 0.9s steps(1) infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            color: var(--text);
+        }
+        button:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+        .btn-primary {
+            background: linear-gradient(90deg, #1fb6d9, #7a4dff);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(61,224,255,0.18);
+        }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+        .btn-danger {
+            background: rgba(255,107,122,0.16);
+            border: 1px solid rgba(255,107,122,0.35);
+            color: #ffb0b8;
+        }
+        .btn-ghost {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--line);
+            color: #c9d4e8;
+        }
+        .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.1); }
+
+        .hint {
+            text-align: center;
+            color: #66738a;
+            font-size: 12px;
+        }
+        .config-info {
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--line);
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* 设置弹窗 */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 8, 18, 0.72);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .settings-panel {
+            width: min(720px, 100%);
+            max-height: min(88vh, 860px);
+            display: flex;
+            flex-direction: column;
+            background: #121a2e;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+            animation: modalIn .16s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to { opacity: 1; transform: none; }
+        }
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+            flex-shrink: 0;
+        }
+        .settings-header h3 { font-size: 15px; color: #d7e0f2; font-weight: 600; }
+        .settings-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,0.05);
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .settings-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .settings-body {
+            padding: 0 16px 16px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tab-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 14px 0 12px; }
+        .tab-btn {
+            padding: 8px 12px;
+            border-radius: 9px;
+            background: rgba(255,255,255,0.05);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .tab-btn.active {
+            color: var(--cyan);
+            background: rgba(61,224,255,0.12);
+            border: 1px solid rgba(61,224,255,0.28);
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 12px;
+        }
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .orb-wrap, #orbCanvas { width: 120px; height: 120px; }
+        }
+        .form-row { display: flex; flex-direction: column; gap: 4px; }
+        .form-row.full { grid-column: 1 / -1; }
+        .form-row label { font-size: 12px; color: var(--muted); }
+        .form-row input,
+        .form-row select,
+        .form-row textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.28);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            color: var(--text);
+            padding: 9px 10px;
+            font-size: 13px;
+            outline: none;
+            font-family: inherit;
+        }
+        .form-row input:focus,
+        .form-row select:focus,
+        .form-row textarea:focus {
+            border-color: rgba(61,224,255,0.45);
+        }
+        .form-row textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+        .form-row input[type="range"] { padding: 0; height: 28px; accent-color: var(--cyan); }
+        .range-line { display: flex; align-items: center; gap: 10px; }
+        .range-val {
+            min-width: 42px;
+            text-align: right;
+            color: var(--cyan);
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+        .switch-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+        .switch-row input { width: 16px; height: 16px; accent-color: var(--cyan); }
+        .hint-text { font-size: 11px; color: #66738a; margin-top: 4px; }
+        .settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .settings-msg { font-size: 12px; color: #8dffb8; }
+        .settings-msg.err { color: #ff8f9a; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="brand">
+                <h1>实时语音 AI 助手</h1>
+                <p>Voice AI Assistant Lite · WebRTC + 流式对话</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-ghost" type="button" onclick="toggleSettings()">设置</button>
+                <button class="btn-ghost" type="button" onclick="clearChat()">清空对话</button>
+            </div>
+        </header>
+
+        <section class="stage">
+            <div class="orb-wrap">
+                <canvas id="orbCanvas" width="296" height="296"></canvas>
+            </div>
+            <div class="status-pill" id="statusText">点击「开始对话」</div>
+        </section>
+
+        <section class="chat" id="chatLog" aria-live="polite">
+            <div class="chat-empty" id="chatEmpty">
+                开始对话后，这里会滚动显示完整多轮历史。<br>
+                说话可打断 AI；设置支持热更新。
+            </div>
+        </section>
+
+        <div class="controls">
+            <button class="btn-primary" id="startBtn" type="button" onclick="startConversation()">开始对话</button>
+            <button class="btn-danger" id="stopBtn" type="button" onclick="stopConversation()" disabled>停止</button>
+        </div>
+        <p class="hint">快捷键：空格开始 · Esc 停止 / 关闭设置</p>
+
+        <div class="config-info" id="configInfo">加载配置中...</div>
+    </div>
+
+    <div class="modal-backdrop" id="settingsModal" onclick="onSettingsBackdrop(event)">
+        <div class="settings-panel" id="settingsPanel" role="dialog" aria-modal="true" aria-label="模型与参数设置">
+            <div class="settings-header">
+                <h3>模型与参数设置</h3>
+                <button class="settings-close" type="button" onclick="closeSettings()" aria-label="关闭">×</button>
+            </div>
+            <div class="settings-body">
+                <div class="tab-bar">
+                    <button type="button" class="tab-btn active" data-tab="basic">基础</button>
+                    <button type="button" class="tab-btn" data-tab="stt">语音识别</button>
+                    <button type="button" class="tab-btn" data-tab="llm">大模型</button>
+                    <button type="button" class="tab-btn" data-tab="tts">语音合成</button>
+                    <button type="button" class="tab-btn" data-tab="vad">VAD / 打断</button>
+                </div>
+
+                <div class="tab-pane active" id="tab-basic">
+                    <div class="form-grid">
+                        <div class="form-row full">
+                            <label>系统提示词</label>
+                            <textarea id="system_prompt"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label>语言</label>
+                            <select id="language">
+                                <option value="zh">中文</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>最大历史轮数</label>
+                            <input type="number" id="max_history" min="1" max="50" step="1">
+                        </div>
+                        <div class="form-row full">
+                            <div class="switch-row">
+                                <input type="checkbox" id="interrupt_on_speech">
+                                <label for="interrupt_on_speech">允许说话打断 AI 回复</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-stt">
+                    <div class="form-grid">
+                        <div class="form-row full">
+                            <label>Provider</label>
+                            <select id="stt_provider">
+                                <option value="openai">OpenAI 兼容（云端）</option>
+                                <option value="faster-whisper">Faster Whisper（本地）</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row stt-openai-only">
+                            <label>模型</label>
+                            <input id="stt_model" placeholder="whisper-1 / XingChenASR...">
+                        </div>
+                        <div class="form-row stt-openai-only">
+                            <label>语言</label>
+                            <input id="stt_language" placeholder="zh">
+                        </div>
+                        <div class="form-row full stt-openai-only">
+                            <label>Base URL</label>
+                            <input id="stt_base_url" placeholder="https://api.siliconflow.cn/v1">
+                        </div>
+                        <div class="form-row full stt-openai-only">
+                            <label>API Key（留空不修改）</label>
+                            <input id="stt_api_key" type="password" autocomplete="off">
+                            <div class="hint-text" id="stt_key_hint"></div>
+                        </div>
+
+                        <div class="form-row stt-fw-only">
+                            <label>模型大小</label>
+                            <select id="stt_model_size">
+                                <option value="tiny">tiny</option>
+                                <option value="base">base</option>
+                                <option value="small">small</option>
+                                <option value="medium">medium</option>
+                                <option value="large-v3">large-v3</option>
+                            </select>
+                        </div>
+                        <div class="form-row stt-fw-only">
+                            <label>设备</label>
+                            <select id="stt_device">
+                                <option value="auto">auto</option>
+                                <option value="cpu">cpu</option>
+                                <option value="cuda">cuda</option>
+                            </select>
+                        </div>
+                        <div class="form-row stt-fw-only">
+                            <label>计算精度</label>
+                            <select id="stt_compute_type">
+                                <option value="int8">int8</option>
+                                <option value="float16">float16</option>
+                                <option value="float32">float32</option>
+                            </select>
+                        </div>
+                        <div class="form-row stt-fw-only">
+                            <label>语言</label>
+                            <input id="stt_fw_language" placeholder="zh">
+                        </div>
+                        <div class="form-row full stt-fw-only">
+                            <div class="hint-text">本地识别，无需 API Key。首次使用会下载模型；未安装 faster-whisper 时请先 pip install。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-llm">
+                    <div class="form-grid">
+                        <div class="form-row full">
+                            <label>Provider</label>
+                            <select id="llm_provider">
+                                <option value="openai">OpenAI 兼容（云端）</option>
+                                <option value="ollama">Ollama（本地）</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>模型</label>
+                            <input id="llm_model" placeholder="gpt-4o-mini / qwen2.5:7b">
+                        </div>
+                        <div class="form-row full">
+                            <label>Base URL</label>
+                            <input id="llm_base_url" placeholder="https://api.openai.com/v1">
+                        </div>
+                        <div class="form-row full llm-openai-only">
+                            <label>API Key（留空不修改）</label>
+                            <input id="llm_api_key" type="password" autocomplete="off">
+                            <div class="hint-text" id="llm_key_hint"></div>
+                        </div>
+                        <div class="form-row">
+                            <label>Temperature</label>
+                            <div class="range-line">
+                                <input type="range" id="llm_temperature" min="0" max="2" step="0.1">
+                                <span class="range-val" id="llm_temperature_val">0.7</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label>Max Tokens</label>
+                            <input type="number" id="llm_max_tokens" min="16" max="8192" step="16">
+                        </div>
+                        <div class="form-row full llm-ollama-only">
+                            <div class="hint-text">需本机已启动 Ollama（默认 http://localhost:11434），无需 API Key。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-tts">
+                    <div class="form-grid">
+                        <div class="form-row full">
+                            <label>Provider</label>
+                            <select id="tts_provider">
+                                <option value="openai">OpenAI 兼容（云端）</option>
+                                <option value="edge-tts">Edge TTS（免费本地调用）</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row tts-openai-only">
+                            <label>模式</label>
+                            <select id="tts_mode">
+                                <option value="chat">chat（mimo 等）</option>
+                                <option value="speech">speech（标准）</option>
+                            </select>
+                        </div>
+                        <div class="form-row tts-openai-only">
+                            <label>模型</label>
+                            <input id="tts_model" placeholder="tts-1 / mimo-v2.5-tts">
+                        </div>
+                        <div class="form-row tts-openai-only">
+                            <label>音色 Voice</label>
+                            <input id="tts_voice" placeholder="alloy / 冰糖">
+                        </div>
+                        <div class="form-row tts-openai-only">
+                            <label>采样率</label>
+                            <input type="number" id="tts_sample_rate" min="8000" max="48000" step="1000">
+                        </div>
+                        <div class="form-row full tts-openai-only">
+                            <label>Base URL</label>
+                            <input id="tts_base_url" placeholder="https://api.openai.com/v1">
+                        </div>
+                        <div class="form-row full tts-openai-only">
+                            <label>API Key（留空不修改）</label>
+                            <input id="tts_api_key" type="password" autocomplete="off">
+                            <div class="hint-text" id="tts_key_hint"></div>
+                        </div>
+
+                        <div class="form-row tts-edge-only">
+                            <label>音色 Voice</label>
+                            <input id="tts_edge_voice" placeholder="zh-CN-XiaoxiaoNeural">
+                        </div>
+                        <div class="form-row tts-edge-only">
+                            <label>语速 Rate</label>
+                            <input id="tts_rate" placeholder="+0%">
+                        </div>
+                        <div class="form-row tts-edge-only">
+                            <label>音量 Volume</label>
+                            <input id="tts_volume" placeholder="+0%">
+                        </div>
+                        <div class="form-row tts-edge-only">
+                            <label>采样率</label>
+                            <input type="number" id="tts_edge_sample_rate" min="8000" max="48000" step="1000">
+                        </div>
+                        <div class="form-row full tts-edge-only">
+                            <div class="hint-text">免费微软 TTS，无需 API Key。推荐音色：晓晓 / 云希 / 云健。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-vad">
+                    <div class="form-grid">
+                        <div class="form-row full">
+                            <label>开始说话阈值</label>
+                            <div class="range-line">
+                                <input type="range" id="vad_threshold" min="0.3" max="0.95" step="0.01">
+                                <span class="range-val" id="vad_threshold_val">0.62</span>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <label>最短语音时长（秒）</label>
+                            <div class="range-line">
+                                <input type="range" id="vad_min_speech_duration" min="0.2" max="2" step="0.05">
+                                <span class="range-val" id="vad_min_speech_duration_val">0.45</span>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <label>判定说完静默（秒）</label>
+                            <div class="range-line">
+                                <input type="range" id="vad_min_silence_duration" min="0.4" max="2.5" step="0.05">
+                                <span class="range-val" id="vad_min_silence_duration_val">0.85</span>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <label>打断阈值</label>
+                            <div class="range-line">
+                                <input type="range" id="vad_interrupt_threshold" min="0.4" max="0.98" step="0.01">
+                                <span class="range-val" id="vad_interrupt_threshold_val">0.78</span>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <label>打断需持续（秒）</label>
+                            <div class="range-line">
+                                <input type="range" id="vad_interrupt_min_duration" min="0.3" max="2.5" step="0.05">
+                                <span class="range-val" id="vad_interrupt_min_duration_val">0.8</span>
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <label>气口容忍（秒）</label>
+                            <div class="range-line">
+                                <input type="range" id="vad_pending_grace" min="0.05" max="0.8" step="0.01">
+                                <span class="range-val" id="vad_pending_grace_val">0.28</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="btn-primary" id="saveSettingsBtn" type="button" onclick="saveSettings()">保存并热更新</button>
+                    <button class="btn-ghost" type="button" onclick="loadSettings(true)">重新加载</button>
+                    <button class="btn-ghost" type="button" onclick="closeSettings()">关闭</button>
+                    <span class="settings-msg" id="settingsMsg"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
