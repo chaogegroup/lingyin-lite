@@ -97,6 +97,12 @@ tts:
 
 已验证可接：DeepSeek、SiliconFlow、智谱、月之暗面、Ollama 等 OpenAI 兼容接口。
 
+## 界面预览
+
+![Lingyin Lite 主界面](docs/screenshots/ui_main.png)
+
+深色对话界面 + Orb 状态动画（聆听 / 思考 / 回复 / 打断），右上角可打开设置面板热更新 Provider。
+
 ## 架构速览
 
 ```
@@ -126,7 +132,10 @@ lingyin-lite/
 ├── run.py
 ├── server/          # FastAPI + Pipeline + Providers
 ├── client/          # Web UI（对话 / Orb / 设置）
-└── docs/            # 架构说明与截图
+└── docs/
+    ├── architecture.md
+    ├── RELEASE_v1.0.0.md
+    └── screenshots/ui_main.png
 ```
 
 ## 适合谁
