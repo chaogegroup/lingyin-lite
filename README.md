@@ -99,19 +99,19 @@ tts:
 
 ## 界面预览
 
-**对话中**（Orb 回复态 + 多轮气泡）：
+**对话中**（Orb 状态 + 多轮气泡）：
 
 ![Lingyin Lite 对话界面](docs/screenshots/ui_main.png)
 
 **设置面板**（改配置不改代码，保存即热更新）：
 
-| 基础 / 提示词 | 语音识别 | 语音合成 |
+| 基础 / 提示词 | 语音识别 | 大模型 |
 |:---:|:---:|:---:|
-| ![基础](docs/screenshots/ui_settings_basic.png) | ![STT](docs/screenshots/ui_settings_stt.png) | ![TTS](docs/screenshots/ui_settings_tts.png) |
+| ![基础](docs/screenshots/ui_settings_basic.png) | ![STT](docs/screenshots/ui_settings_stt.png) | ![LLM](docs/screenshots/ui_settings_llm.png) |
 
-| VAD / 打断 |
-|:---:|
-| ![VAD](docs/screenshots/ui_settings_vad.png) |
+| 语音合成 | VAD / 打断 |
+|:---:|:---:|
+| ![TTS](docs/screenshots/ui_settings_tts.png) | ![VAD](docs/screenshots/ui_settings_vad.png) |
 
 ## 架构速览
 
